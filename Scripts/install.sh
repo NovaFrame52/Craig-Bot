@@ -55,6 +55,8 @@ if [ -n "$TOKEN" ]; then
     exit 1
   fi
 
+fi
+
 if [ -n "$TOKEN" ]; then
   echo "Writing .env with new token"
   cat > "$PROJECT_ROOT/.env" <<EOF

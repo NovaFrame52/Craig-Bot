@@ -2,3 +2,13 @@
 .venv
 venv/
 Scripts/venv/
+craig.log
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+.DS_Store
+.idea/
+.vscode/
+*.env
