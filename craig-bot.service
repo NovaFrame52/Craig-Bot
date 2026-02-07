@@ -1,0 +1,18 @@
+[Unit]
+Description=Craig Discord Bot
+After=network.target
+
+[Service]
+Type=simple
+Restart=on-failure
+# WorkingDirectory will be set by the installer when copying this file to /etc/systemd/system/
+WorkingDirectory=__INSTALL_DIR__
+ExecStart=/usr/bin/env python3 __INSTALL_DIR__/bot.py
+User=www-data
+Group=www-data
+Environment=PYTHONUNBUFFERED=1
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
