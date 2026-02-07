@@ -14,11 +14,15 @@ Quick install
 
 1. Make the script executable and run it:
 
-    chmod +x install.sh
-    sudo ./install.sh
+    chmod +x Scripts/install.sh
+    sudo Scripts/install.sh
 
 The installer will:
-- Create an isolated Python virtual environment in the installation directory
+    - Create an isolated Python virtual environment in Scripts/venv/
+    - Install dependencies into the venv
+    - Ask for your Discord bot token (or reuse existing if already configured)
+    - Set up a systemd service
+    - Create management command aliases in /usr/local/bin/
 - Install dependencies into the venv
 - Prompt for your Discord bot token
 - Set up a systemd service
@@ -50,7 +54,7 @@ Configuration
 
 Edit the `.env` file in the installation directory. Values:
 
-- DISCORD_TOKEN — your bot token
+    - DISCORD_TOKEN — your bot token (created/updated during installation)
 - RESPONSE_CHANCE — probability (0.0-1.0) Craig reacts to trigger phrases (default 0.5)
 - LOG_FILE — path to file where Craig logs
 - COMMAND_PREFIX — reserved for future commands

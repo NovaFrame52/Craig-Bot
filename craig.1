@@ -1,0 +1,150 @@
+.TH CRAIG 1 "February 2026" "Craig Bot 1.0" "User Commands"
+.SH NAME
+craig \- Discord bot with disappointed dad personality
+.SH SYNOPSIS
+.B craig-start
+.br
+.B craig-stop
+.br
+.B craig-restart
+.br
+.B craig-status
+.br
+.B craig-log
+.SH DESCRIPTION
+Craig is a Discord bot that responds like a disappointed, divorced father. He reacts to trigger phrases and direct mentions with a large pool of humorous, disapproving responses.
+.SH COMMANDS
+.TP
+.B craig-start
+Start the Craig bot service.
+.TP
+.B craig-stop
+Stop the Craig bot service.
+.TP
+.B craig-restart
+Restart the Craig bot service. Use this after editing .env to apply changes.
+.TP
+.B craig-status
+Display the current status of the Craig bot service.
+.TP
+.B craig-log
+Follow the Craig bot logs in real time using journalctl. Press Ctrl+C to exit.
+.SH INSTALLATION
+To install Craig from the project directory:
+
+    chmod +x Scripts/install.sh
+    sudo Scripts/install.sh
+
+The installer will:
+.IP \(bu 2
+Create an isolated Python virtual environment
+.IP \(bu 2
+Install dependencies (discord.py, python-dotenv)
+.IP \(bu 2
+Prompt for your Discord bot token (or reuse existing token)
+.IP \(bu 2
+Configure systemd service for auto-start on boot
+.IP \(bu 2
+Install management command aliases to /usr/local/bin/
+
+.SH UNINSTALL
+To uninstall Craig:
+
+    sudo Scripts/uninstall.sh
+
+The script will stop the service, remove systemd configuration, and optionally delete bot files.
+
+.SH CONFIGURATION
+Craig's behavior is configured in the .env file in the project root. Edit with:
+
+    $EDITOR .env
+
+Variables:
+.TP
+.B DISCORD_TOKEN
+Your Discord bot token (required)
+.TP
+.B RESPONSE_CHANCE
+Probability (0.0-1.0) that Craig reacts to trigger phrases (default: 0.5)
+.TP
+.B LOG_FILE
+Path to the log file for debugging (default: craig.log)
+.TP
+.B COMMAND_PREFIX
+Reserved for future commands (default: !)
+
+After editing .env, run:
+
+    craig-restart
+
+.SH SLASH COMMANDS
+In Discord, use these slash commands:
+
+/dadjoke - Get a random disappointed dad response
+.br
+/roast [target] - Get roasted by Craig
+.br
+/wisdom - Craig shares a life lesson
+.br
+/sigh - Craig sighs in disappointment
+
+.SH TRIGGER PHRASES
+Craig automatically responds to 50+ trigger phrases including:
+
+- Insults: "fuck you", "screw you", "fuck off"
+- Disbelief: "are you kidding me", "yeah right", "no way"
+- Exasperation: "what the hell", "this is bullshit"
+- Frustration: "fuck this", "how stupid"
+
+He also always responds when his name is mentioned anywhere in a message.
+
+.SH LOGS
+View recent logs:
+
+    craig-log
+
+View logs from the current boot:
+
+    journalctl -u craig-bot -b
+
+View logs from the past hour:
+
+    journalctl -u craig-bot --since "1 hour ago"
+
+.SH FILES
+.TP
+.B Scripts/craig-bot.py
+Main bot code
+.TP
+.B Scripts/install.sh
+Installation script
+.TP
+.B Scripts/uninstall.sh
+Uninstallation script
+.TP
+.B .env
+Configuration file (not in version control)
+.TP
+.B requirements.txt
+Python dependencies
+
+.SH ENVIRONMENT
+Craig requires:
+.IP \(bu 2
+Python 3.8+
+.IP \(bu 2
+pip (Python package manager)
+.IP \(bu 2
+systemd (for service management)
+.IP \(bu 2
+A Discord bot token from Discord Developer Portal
+
+.SH SEE ALSO
+.BR systemctl (1),
+.BR journalctl (1),
+.BR python3 (1)
+
+.SH AUTHOR
+Created as a Discord bot framework
+.SH LICENSE
+MIT
