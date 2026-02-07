@@ -5,6 +5,7 @@ import random
 import asyncio
 from dotenv import load_dotenv
 import discord
+import re
 from discord.ext import commands
 
 load_dotenv()
@@ -93,6 +94,18 @@ TRIGGER_CATEGORIES = {
         "for real",
     ],
 }
+
+# Build normalized trigger map for more reliable matching
+def _normalize_text(s: str) -> str:
+    s = s.lower()
+    # replace punctuation with spaces
+    s = re.sub(r"[^a-z0-9\s]", " ", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
+
+NORMALIZED_TRIGGER_CATEGORIES = {}
+for cat, phrases in TRIGGER_CATEGORIES.items():
+    NORMALIZED_TRIGGER_CATEGORIES[cat] = [_normalize_text(p) for p in phrases]
 
 # Responses for when someone insults Craig
 RESPONSES_INSULT = [
@@ -195,17 +208,29 @@ def contains_trigger(content: str) -> str | None:
     Check if content contains a trigger phrase and return the category.
     Returns the category name if found, None otherwise.
     """
-    low = content.lower()
-    for category, phrases in TRIGGER_CATEGORIES.items():
-        if any(phrase in low for phrase in phrases):
-            return category
+    low = _normalize_text(content)
+    # surround with spaces to better match whole phrases
+    low_spaced = f" {low} "
+    for category, phrases in NORMALIZED_TRIGGER_CATEGORIES.items():
+        for phrase in phrases:
+            if f" {phrase} " in low_spaced:
+                return category
+    # fallback: also allow substring matches (covers short words like wtf)
+    for category, phrases in NORMALIZED_TRIGGER_CATEGORIES.items():
+        for phrase in phrases:
+            if phrase and phrase in low:
+                return category
     return None
 
 
 @client.event
 async def on_ready():
     logger.info(f"Logged in as {client.user} (id: {client.user.id})")
-    logger.info(f"Synced slash commands")
+    try:
+        await client.tree.sync()
+        logger.info("Synced slash commands")
+    except Exception:
+        logger.exception("Failed to sync slash commands")
 
 
 @client.event
@@ -215,13 +240,16 @@ async def on_message(message: discord.Message):
 
     try:
         content = message.content or ""
-
         # Check if Craig's name appears anywhere in the message
         mentioned = client.user in message.mentions
         name_in_message = "craig" in content.lower()
 
         # Check for trigger phrases and get category
         trigger_category = contains_trigger(content)
+
+        # Diagnostic logging to help understand detection/response decisions
+        logger.info(f"Message from {message.author}: '{content}'")
+        logger.info(f"Detection: mentioned={mentioned}, name_in_message={name_in_message}, trigger_category={trigger_category}")
 
         responded = False
 
@@ -240,7 +268,9 @@ async def on_message(message: discord.Message):
 
         # If Craig's name wasn't mentioned, triggers have a chance to respond
         if not responded and trigger_category:
-            if random.random() < RESPONSE_CHANCE:
+            r = random.random()
+            logger.info(f"Trigger found; random={r:.3f}, threshold={RESPONSE_CHANCE}")
+            if r < RESPONSE_CHANCE:
                 # Select response based on trigger category
                 if trigger_category == "insult":
                     reply = random.choice(RESPONSES_INSULT)
@@ -255,6 +285,8 @@ async def on_message(message: discord.Message):
                 
                 await message.channel.send(reply)
                 logger.info(f"Responded to {trigger_category} trigger in {message.channel} by {message.author}")
+            else:
+                logger.info("Decided not to respond to trigger (random threshold)")
 
     except Exception as e:
         logger.exception("Error handling message")
@@ -263,7 +295,7 @@ async def on_message(message: discord.Message):
     await client.process_commands(message)
 
 
-@client.app_command.command(name="dadjoke", description="Get a disappointed dad response")
+@client.tree.command(name="dadjoke", description="Get a disappointed dad response")
 async def dadjoke(interaction: discord.Interaction):
     """Delivers a random dad line"""
     try:
@@ -274,7 +306,7 @@ async def dadjoke(interaction: discord.Interaction):
         logger.exception("Error in dadjoke command")
 
 
-@client.app_command.command(name="roast", description="Get roasted by Craig")
+@client.tree.command(name="roast", description="Get roasted by Craig")
 async def roast(interaction: discord.Interaction, target: str = "you"):
     """Craig roasts someone or something"""
     try:
@@ -285,7 +317,7 @@ async def roast(interaction: discord.Interaction, target: str = "you"):
         logger.exception("Error in roast command")
 
 
-@client.app_command.command(name="wisdom", description="Craig shares some disappointed wisdom")
+@client.tree.command(name="wisdom", description="Craig shares some disappointed wisdom")
 async def wisdom(interaction: discord.Interaction):
     """Craig shares his life lessons"""
     try:
@@ -296,7 +328,7 @@ async def wisdom(interaction: discord.Interaction):
         logger.exception("Error in wisdom command")
 
 
-@client.app_command.command(name="sigh", description="Craig just sighs")
+@client.tree.command(name="sigh", description="Craig just sighs")
 async def sigh(interaction: discord.Interaction):
     """Craig expresses his disappointment through a sigh"""
     try:
