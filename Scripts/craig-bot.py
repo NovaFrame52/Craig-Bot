@@ -556,7 +556,7 @@ A disappointed dad bot with 100+ responses and 11 interactive commands.
 Craig automatically responds to 50+ trigger phrases and always responds when mentioned.
 Response chance is configurable via RESPONSE_CHANCE environment variable (default: 50%).
 
-For more info, visit: https://github.com/aster/Craig"""
+For more info, visit: https://github.com/NovaFrame52/Craig-Bot"""
         await interaction.response.send_message(about_text)
         logger.info(f"Slash command /about used by {interaction.user} in {interaction.channel}")
     except Exception as e:
@@ -579,6 +579,24 @@ async def sync(interaction: discord.Interaction):
     except Exception as e:
         logger.exception("Error in sync command")
         await interaction.response.send_message("Failed to sync commands. Check the logs.", ephemeral=True)
+
+
+@client.command(name="sync", description="Sync Craig's commands to this server")
+async def prefix_sync(ctx: commands.Context):
+    """Manually sync slash commands to the current server (prefix command version)"""
+    try:
+        # Check if user is admin or has manage_guild permission
+        if not ctx.author.guild_permissions.administrator:
+            await ctx.send("You need to be an administrator to use this command.")
+            logger.info(f"Prefix sync command blocked for non-admin {ctx.author} in {ctx.channel}")
+            return
+        
+        await client.tree.sync()
+        await ctx.send("Commands synced successfully!")
+        logger.info(f"Slash commands synced by {ctx.author} in {ctx.guild}")
+    except Exception as e:
+        logger.exception("Error in prefix sync command")
+        await ctx.send("Failed to sync commands. Check the logs.")
 
 
 def main():
